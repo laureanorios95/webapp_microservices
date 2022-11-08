@@ -1,0 +1,9 @@
+GET ARTICLES JSON:
+    curl --request GET \
+    --url http://localhost:8080/ \
+    --header 'Accept: application/json'
+
+GET ARTICLE XML:
+    curl --request GET \
+      --url http://localhost:8080/article/view/1 \
+      --header 'Accept: application/xml'
