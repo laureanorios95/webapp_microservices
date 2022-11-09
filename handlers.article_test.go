@@ -3,8 +3,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -58,13 +60,6 @@ func TestArticleListJSON(t *testing.T) {
 	r := getRouter(true)
 	r.GET("/", showIndexPage)
 
-	var should = make([]string, 0, len(articleList))
-
-	for _, article := range articleList {
-		should = append(should, "{"+"\"id\":\""+fmt.Sprint(article.ID)+
-			"\",\"title\":\""+article.Title+"\",\"content\":\""+article.Content+"\"}")
-	}
-
 	req, _ := http.NewRequest("GET", "/", nil)
 	req.Header.Set("Accept", "application/json")
 
@@ -72,10 +67,34 @@ func TestArticleListJSON(t *testing.T) {
 		statusOK := w.Code == http.StatusOK
 
 		p, err := ioutil.ReadAll(w.Body)
-		pageOK := err == nil && strings.Index(string(p),
-			strings.Join(should, ",")) > 0
+		if err != nil {
+			log.Fatal(err)
+		}
+		dec := json.NewDecoder(strings.NewReader(string(p)))
 
-		return statusOK && pageOK
+		// read open bracket
+		t, err := dec.Token()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%T: %v\n", t, t)
+
+		var articleStruct article
+
+		for i := 0; dec.More(); i++ {
+			err = dec.Decode(&articleStruct)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if articleStruct != articleList[i] {
+				return false
+			}
+		}
+
+		// pageOK := err == nil && strings.Index(string(p),
+		// 	articleList) > 0
+
+		return statusOK //&& pageOK
 	})
 }
 
