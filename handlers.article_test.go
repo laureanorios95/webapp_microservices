@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -31,7 +31,7 @@ func TestShowIndexPageUnauthenticated(t *testing.T) {
 		// Test that the page title is "Home Page"
 		// You can carry out a lot more detailed tests using libraries that can
 		// parse and process HTML pages
-		p, err := ioutil.ReadAll(w.Body)
+		p, err := io.ReadAll(w.Body)
 		pageOK := err == nil && strings.Index(string(p), "<title>Home Page</title>") > 0
 
 		return statusOK && pageOK
@@ -48,8 +48,8 @@ func TestArticleUnauthenticated(t *testing.T) {
 		testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
 			statusOK := w.Code == http.StatusOK
 
-			p, err := ioutil.ReadAll(w.Body)
-			pageOK := err == nil && strings.Index(string(p), "<h1>"+article.Title+"</h2>") > 0 &&
+			p, err := io.ReadAll(w.Body)
+			pageOK := err == nil && strings.Index(string(p), "<h1>"+article.Title+"</h1>") > 0 &&
 				strings.Index(string(p), "<p>"+article.Content+"</p>") > 0
 
 			return statusOK && pageOK
@@ -67,7 +67,7 @@ func TestArticleListJSON(t *testing.T) {
 	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
 		statusOK := w.Code == http.StatusOK
 
-		p, err := ioutil.ReadAll(w.Body)
+		p, err := io.ReadAll(w.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -112,7 +112,7 @@ func TestArticleXML(t *testing.T) {
 		testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
 			statusOK := w.Code == http.StatusOK
 
-			p, err := ioutil.ReadAll(w.Body)
+			p, err := io.ReadAll(w.Body)
 			if err != nil {
 				log.Fatal(err)
 			}
