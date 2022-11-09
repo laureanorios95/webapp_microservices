@@ -3,9 +3,9 @@ package main
 import "errors"
 
 type article struct {
-	ID      int    `json:"id"`
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	ID      int    `json:"id" xml:"id"`
+	Title   string `json:"title" xml:"title"`
+	Content string `json:"content" xml:"content"`
 }
 
 var articleList = []article{

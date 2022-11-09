@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -102,19 +103,27 @@ func TestArticleXML(t *testing.T) {
 	r := getRouter(true)
 	r.GET("/article/view/:article_id", getArticle)
 
-	for _, article := range articleList {
-		req, _ := http.NewRequest("GET", "/article/view/"+fmt.Sprint(article.ID), nil)
-		req.Header.Set("Accept", "application/json")
+	var articleStruct article
+
+	for _, ar := range articleList {
+		req, _ := http.NewRequest("GET", "/article/view/"+fmt.Sprint(ar.ID), nil)
+		req.Header.Set("Accept", "application/xml")
 
 		testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
 			statusOK := w.Code == http.StatusOK
 
 			p, err := ioutil.ReadAll(w.Body)
-			pageOK := err == nil && strings.Index(string(p),
-				"{ id:"+fmt.Sprint(article.ID)+", title:"+article.Title+
-					", content:"+article.Content+" }") > 0
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err := xml.Unmarshal(p, &articleStruct); err != nil {
+				log.Fatal(err)
+			}
+			if articleStruct != articleList[ar.ID-1] {
+				return false
+			}
 
-			return statusOK && pageOK
+			return statusOK
 		})
 	}
 }
